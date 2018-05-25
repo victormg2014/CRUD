@@ -1,11 +1,18 @@
 Vagrant.configure("2") do |config|
-  config.vm.define "app" do |app|
-    app.vm.provider "docker" do |d|
-      d.build_dir = "."
-      d.cmd = ["/sbin/my_init", "--enable-insecure-key"]
-      d.has_ssh = true
-    end 
+  config.vm.provider "docker" do |d|
+    d.remains_running = false
+    d.build_dir = "."
+    d.has_ssh = true
   end
   config.ssh.username = "root"
-  config.ssh.private_key_path = "insecure_key"
+  config.ssh.private_key_path = "id_rsa"
+  config.vm.provision "chef_solo" do |chef|
+    chef.add_recipe "mysql"
+    chef.cookbooks_path = "cookbooks"
+  end
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "playbook.yml"
+    ansible.compatibility_mode = "2.0"
+  end
 end
+
